@@ -147,6 +147,11 @@ export async function defineConfig(opts_?: z.infer<typeof optsSchema>) {
           serverTransform({
             runtime: '@tanstack/start/server-runtime',
           }),
+          config('start-ssr', {
+            ssr: {
+              external: ['@vinxi/react-server-dom/client'],
+            },
+          }),
         ],
         link: {
           client: 'client',
@@ -170,7 +175,7 @@ export async function defineConfig(opts_?: z.infer<typeof optsSchema>) {
             resolve: {
               conditions: [
                 'react-server',
-                'node',
+                // 'node',
                 'import',
                 process.env.NODE_ENV,
               ],
@@ -178,6 +183,14 @@ export async function defineConfig(opts_?: z.infer<typeof optsSchema>) {
             runtime: '@vinxi/react-server-dom/runtime',
             transpileDeps: ['react', 'react-dom', '@vinxi/react-server-dom'],
           }),
+          // config('start-server', {
+          //   ssr: {
+          //     external: ['@vinxi/react-server-dom/client'],
+          //   },
+          //   optimizeDeps: {
+          //     exclude: ['@vinxi/react-server-dom/client'],
+          //   },
+          // }),
           ...(opts.vite.plugins?.() || []),
           ...(opts.routers.server.vite.plugins?.() || []),
         ],
@@ -293,7 +306,7 @@ function tsrRoutesManifest(opts: {
         try {
           manifest = JSON.parse(await readFile(clientViteManifestPath, 'utf-8'))
         } catch (err) {
-          console.log(err)
+          console.error(err)
           throw new Error(
             `Could not find the production client vite manifest at '${path.resolve(
               config.build.outDir,
@@ -405,7 +418,7 @@ function tsrRoutesManifest(opts: {
         }
 
         if (process.env.TSR_VITE_DEBUG)
-          console.log(JSON.stringify(routesManifest, null, 2))
+          console.info(JSON.stringify(routesManifest, null, 2))
 
         return `export default () => (${JSON.stringify(routesManifest)})`
       }
